@@ -8,7 +8,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
- 
+#include <cstring>
 
 using namespace std;
 
@@ -25,8 +25,6 @@ class UnreliableNetworkLayer {
 
         queue<pair<shared_ptr<uint8_t>, int>> message_queue;
         mutex m;
-        // condition_variable cv;
-        unique_lock<mutex> lock;
 
     public:
         UnreliableNetworkLayer(double prob_loss=0, double prob_corrupt=0, int expected_delay=1);
