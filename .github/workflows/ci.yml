@@ -37,7 +37,7 @@ jobs:
       - name: build directory
         run: mkdir build
       - name: Configure
-        run: cmake --configure ../
+        run: cmake ../
       - name: build
         run: cmake --build
       - name: run
