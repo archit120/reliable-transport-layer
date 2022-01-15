@@ -34,6 +34,12 @@ jobs:
     steps:
       - name: Clone
         uses: actions/checkout@v2
-      - name: Run unit tests
-        uses: HorstBaerbel/action-ctest@1.1
+      - name: build directory
+        run: mkdir build
+      - name: Configure
+        run: cmake --configure ../
+      - name: build
+        run: cmake --build
+      - name: run
+        run: ctest
 
