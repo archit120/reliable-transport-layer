@@ -40,7 +40,7 @@ jobs:
         run: cmake ../
         working-directory: ./build
       - name: build
-        run: cmake --build
+        run: cmake --build .
         working-directory: ./build
       - name: run
         run: ctest
