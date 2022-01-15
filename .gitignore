@@ -2,23 +2,4 @@
 *.out
 .vscode/*
 
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-_deps
-
-*.vcxproj*
-*.sln
-bin/*
-lib/*
-x64/*
-Debug/*
-*.dir*
-*.cmake
+build*
