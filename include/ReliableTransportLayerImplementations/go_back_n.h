@@ -14,6 +14,12 @@
 
 using namespace std;
 
+//packet structure 
+/* 
+ <4 bytes CRC-32><<1-bit ACK>
+ <7-bit sequence number>>
+ <message data>
+*/
 class GoBackN : ReliableTransportLayer {
 
     public:

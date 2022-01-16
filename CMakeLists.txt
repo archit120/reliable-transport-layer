@@ -18,7 +18,11 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 
-add_library(infrastructure "src/infrastructure/UnreliableNetworkLayer/unreliable_network_layer.cpp")
+add_library(
+  infrastructure 
+  "src/infrastructure/UnreliableNetworkLayer/unreliable_network_layer.cpp"
+  "src/infrastructure/helpers/crc32.cpp"
+)
 
 add_executable(
   tests

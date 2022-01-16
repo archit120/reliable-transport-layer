@@ -17,7 +17,8 @@ class UnreliableNetworkLayer {
         double _prob_loss;
         double _prob_corrupt; 
         int _expected_delay;
-
+        double _bandwith;
+        
         default_random_engine generator;
         bernoulli_distribution loss_distribution;
         bernoulli_distribution corrupt_distribution;
@@ -27,7 +28,7 @@ class UnreliableNetworkLayer {
         mutex m;
 
     public:
-        UnreliableNetworkLayer(double prob_loss=0, double prob_corrupt=0, int expected_delay=1);
+        UnreliableNetworkLayer(double prob_loss=0, double prob_corrupt=0, int expected_delay=1, double bandwidth = 0);
 
         int send(const void *msg, int len); 
 

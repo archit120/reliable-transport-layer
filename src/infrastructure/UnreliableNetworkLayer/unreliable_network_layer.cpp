@@ -1,8 +1,9 @@
 #include "UnreliableNetworkLayer/unreliable_network_layer.h"
 #include <iostream>
 
+// TODO: implement bandwidth limits
 // packet is lost with prob_loss, all bytes are independetly corrupted by prob_correct, a packet takes a geometric time with expectation expected_delay to reach
-UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_corrupt, int expected_delay)
+UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_corrupt, int expected_delay, double bandwith)
 {
     _prob_loss = prob_loss, _prob_corrupt = prob_corrupt, _expected_delay = expected_delay;
 
@@ -40,7 +41,7 @@ int UnreliableNetworkLayer::send(const void *msg, int len)
 
     thread timerthread([delay, temp_buffer, len, this]()
                        {
-                           this_thread::sleep_for(chrono::milliseconds(delay));
+                           this_thread::sleep_for(chrono::microseconds(delay));
                            lock_guard<mutex> lg(m);
                            message_queue.push(make_pair(temp_buffer, len));
                        });

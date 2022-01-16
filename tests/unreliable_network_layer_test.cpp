@@ -55,14 +55,14 @@ TEST(UnreliableNetworkLayer, ReorderingStream)
     UnreliableNetworkLayer totallyReliable(0, 0, 5);
     for (int i = 0; i < 100; i++)
         totallyReliable.send(data, 1);
-    this_thread::sleep_for(chrono::milliseconds(2000));
+    this_thread::sleep_for(chrono::milliseconds(100));
     int received = 0, x = 0;
     bool uneq = false;
     for (int i = 0; i < 100; i++)
     {
-        totallyReliable.recv(data, 1);
+        received += totallyReliable.recv(data, 1);
         uneq = (uneq||data[0]!=i);
     }
-
+    ASSERT_EQ(received, 100);
     ASSERT_TRUE(uneq);
 }
