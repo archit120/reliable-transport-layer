@@ -13,7 +13,7 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
     corrupt_distribution = bernoulli_distribution(prob_corrupt);
 
     if (_expected_delay != 1)
-        delay_distribution = geometric_distribution<int>(1.0 / expected_delay);
+        delay_distribution = gamma_distribution<double>(7, expected_delay/7.0);
 }
 
 //send data into unreliable channel
@@ -34,9 +34,8 @@ int UnreliableNetworkLayer::send(const void *msg, int len)
         message_queue.push(make_pair(temp_buffer, len));
         return len;
     }
-
-    int delay = delay_distribution(generator) + 1;
-
+    int delay = (int)(delay_distribution(generator) + 1);
+    // cout << delay << "\n";
     // no timers in Cpp so create a new thread and detach
 
     thread timerthread([delay, temp_buffer, len, this]()

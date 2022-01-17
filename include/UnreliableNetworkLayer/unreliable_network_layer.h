@@ -18,11 +18,11 @@ class UnreliableNetworkLayer {
         double _prob_corrupt; 
         int _expected_delay;
         double _bandwith;
-        
+
         default_random_engine generator;
         bernoulli_distribution loss_distribution;
         bernoulli_distribution corrupt_distribution;
-        geometric_distribution<int> delay_distribution;
+        gamma_distribution<double> delay_distribution;
 
         queue<pair<shared_ptr<uint8_t>, int>> message_queue;
         mutex m;

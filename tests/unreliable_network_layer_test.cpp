@@ -52,17 +52,23 @@ TEST(UnreliableNetworkLayer, CorruptingStream)
 TEST(UnreliableNetworkLayer, ReorderingStream)
 {
     uint8_t *data = new uint8_t[100]();
-    UnreliableNetworkLayer totallyReliable(0, 0, 5);
+    UnreliableNetworkLayer totallyReliable(0, 0, 30);
     for (int i = 0; i < 100; i++)
-        totallyReliable.send(data, 1);
+        data[0] = i, totallyReliable.send(data, 1);
     this_thread::sleep_for(chrono::milliseconds(100));
     int received = 0, x = 0;
-    bool uneq = false;
+    int ood = 0;
+    int cmin = -1;
     for (int i = 0; i < 100; i++)
     {
+
         received += totallyReliable.recv(data, 1);
-        uneq = (uneq||data[0]!=i);
+        // cout << (int)data[0] << "\n";
+        if(data[0] != cmin+1)
+            ood++;
+        cmin = max(cmin, (int)data[0]);
     }
+    // printf("ood: %d\n", ood);
     ASSERT_EQ(received, 100);
-    ASSERT_TRUE(uneq);
+    ASSERT_TRUE(ood > 0);
 }
