@@ -1,7 +1,7 @@
 #include "ReliableTransportLayerImplementations/go_back_n.h"
 #include "helpers/crc.h"
 
-#define MAX_MESSAGE_SIZE (MAX_PACKET_SIZE-8)
+#define MAX_MESSAGE_SIZE (MAX_PACKET_SIZE-9)
 
 bool checkPacket(const void* msg, int len) {
     uint32_t crc = crc32buf((const char *)msg+4, len-4);
@@ -26,6 +26,9 @@ GoBackNSender::GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliabl
     notifier = thread(&GoBackNSender::notifierFunc, this);
     isThreadAlive = shared_ptr<bool>(new bool());
     *isThreadAlive = true;
+    semaphore.reset(new Semaphore(N));
+    base_n = -1;
+    current_n = -1;
 }
 
 GoBackNSender::~GoBackNSender() {
@@ -39,6 +42,12 @@ int GoBackNSender::send(const void *msg, int len) {
             send(msg, min(MAX_MESSAGE_SIZE, len-i));
         return len;
     }
+    shared_ptr<uint8_t> buffer(new uint8_t[MAX_PACKET_SIZE], default_delete<uint8_t[]>());
+    memcpy(buffer.get()+9, msg, len);
+    buffer.get()[8] = 0;
+    semaphore->down();
+    ((uint32_t*)buffer.get())[1] = ++current_n;
+    buffered_packets.push(make_pair(buffer, current_n));
     return ReliableTransportLayerSender::send(msg, len);
 }
 
@@ -51,11 +60,12 @@ void GoBackNSender::handlePacket() {
 //    Handle ACK
 
     uint32_t seqno = ((const uint32_t*)buffer)[1];
-    if(!(seqno>>31))    return;
+    uint8_t flags = ((const char*)buffer)[8];
+    if(flags&1)    return;
 
     seqno ^= 1<<31;
 
-    base_n += seqno;
+    base_n = seqno;
 }
 
 

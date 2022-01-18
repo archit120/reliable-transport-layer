@@ -11,6 +11,7 @@
 #include <cstring>
 
 #include "ReliableTransportLayer/reliable_transport_layer.h"
+#include "helpers/semaphore.h"
 
 using namespace std;
 
@@ -19,11 +20,16 @@ using namespace std;
 packet structure
 
  <4 bytes CRC-32>
- <<1-bit ACK><31-bit sequence number>>
+ <4-byte sequence number>
+ <1-byte flag>
  <message data>
 
  Total header size = 32 bytes
  Remaining packet size = MAX_PACKET_SIZE - 32
+
+ flag structure
+
+ <7 bits unused><1 bit ACK>
 
 CRC-32 is calculated on the header+data.
 ACKs are cumulative.
@@ -38,11 +44,15 @@ Receiver does not buffer packets received out of order.
 class GoBackNSender : ReliableTransportLayerSender {
     const int _N;
     uint32_t base_n;
-    queue<pair<const void*, int>> buffered_packets;
+    uint32_t current_n;
+    queue<pair<shared_ptr<uint8_t>, int>> buffered_packets;
     void notifierFunc();
     void handlePacket();
+    void timerFunc();
     thread notifier;
+    thread timer;
     shared_ptr<bool> isThreadAlive;
+    unique_ptr<Semaphore> semaphore;
     public:
         GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
 
