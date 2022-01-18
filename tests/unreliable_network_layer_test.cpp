@@ -15,6 +15,8 @@ TEST(UnreliableNetworkLayer, TotallyReliable)
 
     for (int i = 0; i < 100; i++)
         ASSERT_EQ(data[i], i);
+    delete [] data;
+
 }
 
 TEST(UnreliableNetworkLayer, LossyStream)
@@ -29,6 +31,8 @@ TEST(UnreliableNetworkLayer, LossyStream)
         received += x;
 
     ASSERT_NE(received, 100);
+    delete [] data;
+
 }
 
 TEST(UnreliableNetworkLayer, CorruptingStream)
@@ -47,6 +51,7 @@ TEST(UnreliableNetworkLayer, CorruptingStream)
     }
 
     ASSERT_TRUE(uneq);
+    delete [] data;
 }
 
 TEST(UnreliableNetworkLayer, ReorderingStream)
@@ -71,4 +76,20 @@ TEST(UnreliableNetworkLayer, ReorderingStream)
     // printf("ood: %d\n", ood);
     ASSERT_EQ(received, 100);
     ASSERT_TRUE(ood > 0);
+    delete [] data;
+
+}
+
+TEST(UnreliableNetworkLayer, NotifyTest) {
+    UnreliableNetworkLayer slowNet(0,0,15000);
+    uint8_t * data = new uint8_t [2];
+    data[0] = 1;
+    slowNet.send(data, 1, 0);
+    int recv_no_wait = slowNet.recv(data+1, 1, 1);
+    ASSERT_EQ(recv_no_wait, 0);
+    slowNet.notify(1);
+    int recv_wait = slowNet.recv(data+1,1,1);
+    ASSERT_EQ(recv_wait, 1);
+    ASSERT_EQ(data[0], data[1]);
+
 }
