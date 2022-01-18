@@ -24,15 +24,15 @@ class UnreliableNetworkLayer {
         bernoulli_distribution corrupt_distribution;
         gamma_distribution<double> delay_distribution;
 
-        queue<pair<shared_ptr<uint8_t>, int>> message_queue;
+        queue<pair<shared_ptr<uint8_t>, int>> message_queue[2];
         mutex m;
 
     public:
         UnreliableNetworkLayer(double prob_loss=0, double prob_corrupt=0, int expected_delay=1, double bandwidth = 0);
 
-        int send(const void *msg, int len); 
+        int send(const void *msg, int len, int id); 
 
-        int recv(void *buf, int len);
+        int recv(void *buf, int len, int id);
 
 };
 

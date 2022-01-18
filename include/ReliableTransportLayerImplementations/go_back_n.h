@@ -14,18 +14,24 @@
 
 using namespace std;
 
-//packet structure 
+// 
 /* 
+packet structure
+
  <4 bytes CRC-32><<1-bit ACK>
- <7-bit sequence number>>
+ <31-bit sequence number>>
  <message data>
+
+Sender maintains a timeout for each sent packet. If ACK is not received 
+then it resends all packets between last received ACK for and n packets
+ahead. 
+ 
 */
-class GoBackN : ReliableTransportLayer {
+class GoBackNSender : ReliableTransportLayerSender {
 
     public:
-        GoBackN(int N);
+        GoBackNSender(int N);
         int send(const void *msg, int len); 
-        int recv(void *buf, int len);
 };
 
 #endif

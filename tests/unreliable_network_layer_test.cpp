@@ -9,9 +9,9 @@ TEST(UnreliableNetworkLayer, TotallyReliable)
         data[i]=i;
 
     UnreliableNetworkLayer totallyReliable(0, 0);
-    totallyReliable.send(data, 100);
+    totallyReliable.send(data, 100, 0);
     this_thread::sleep_for(chrono::milliseconds(100));
-    ASSERT_EQ(totallyReliable.recv(data, 100), 100);
+    ASSERT_EQ(totallyReliable.recv(data, 100, 1), 100);
 
     for (int i = 0; i < 100; i++)
         ASSERT_EQ(data[i], i);
@@ -22,10 +22,10 @@ TEST(UnreliableNetworkLayer, LossyStream)
     uint8_t *data = new uint8_t[100]();
     UnreliableNetworkLayer totallyReliable(0.5, 0);
     for (int i = 0; i < 100; i++)
-        totallyReliable.send(data, 1);
+        totallyReliable.send(data, 1, 0);
     this_thread::sleep_for(chrono::milliseconds(100));
     int received = 0, x = 0;
-    while ((x = totallyReliable.recv(data, 100)))
+    while ((x = totallyReliable.recv(data, 100, 1)))
         received += x;
 
     ASSERT_NE(received, 100);
@@ -36,13 +36,13 @@ TEST(UnreliableNetworkLayer, CorruptingStream)
     uint8_t *data = new uint8_t[100]();
     UnreliableNetworkLayer totallyReliable(0, 0.5);
     for (int i = 0; i < 100; i++)
-        totallyReliable.send(data, 1);
+        totallyReliable.send(data, 1, 0);
     this_thread::sleep_for(chrono::milliseconds(100));
     int received = 0, x = 0;
     bool uneq = false;
     for (int i = 0; i < 100; i++)
     {
-        totallyReliable.recv(data, 1);
+        totallyReliable.recv(data, 1, 1);
         uneq = (uneq||data[0]!=i);
     }
 
@@ -54,7 +54,7 @@ TEST(UnreliableNetworkLayer, ReorderingStream)
     uint8_t *data = new uint8_t[100]();
     UnreliableNetworkLayer totallyReliable(0, 0, 30);
     for (int i = 0; i < 100; i++)
-        data[0] = i, totallyReliable.send(data, 1);
+        data[0] = i, totallyReliable.send(data, 1, 0);
     this_thread::sleep_for(chrono::milliseconds(100));
     int received = 0, x = 0;
     int ood = 0;
@@ -62,7 +62,7 @@ TEST(UnreliableNetworkLayer, ReorderingStream)
     for (int i = 0; i < 100; i++)
     {
 
-        received += totallyReliable.recv(data, 1);
+        received += totallyReliable.recv(data, 1, 1);
         // cout << (int)data[0] << "\n";
         if(data[0] != cmin+1)
             ood++;

@@ -16,8 +16,8 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
         delay_distribution = gamma_distribution<double>(7, expected_delay/7.0);
 }
 
-//send data into unreliable channel
-int UnreliableNetworkLayer::send(const void *msg, int len)
+//send data into unreliable channel, id is 0/1
+int UnreliableNetworkLayer::send(const void *msg, int len, int id)
 {
     if (loss_distribution(generator))
         return len;
@@ -31,18 +31,18 @@ int UnreliableNetworkLayer::send(const void *msg, int len)
     if (_expected_delay == 1)
     {
         lock_guard<mutex> lg(m);
-        message_queue.push(make_pair(temp_buffer, len));
+        message_queue[id].push(make_pair(temp_buffer, len));
         return len;
     }
     int delay = (int)(delay_distribution(generator) + 1);
     // cout << delay << "\n";
     // no timers in Cpp so create a new thread and detach
 
-    thread timerthread([delay, temp_buffer, len, this]()
+    thread timerthread([delay, temp_buffer, len, id, this]()
                        {
                            this_thread::sleep_for(chrono::microseconds(delay));
                            lock_guard<mutex> lg(m);
-                           message_queue.push(make_pair(temp_buffer, len));
+                           message_queue[id].push(make_pair(temp_buffer, len));
                        });
 
     timerthread.detach();
@@ -50,14 +50,14 @@ int UnreliableNetworkLayer::send(const void *msg, int len)
     return len;
 }
 
-//receive data from unreliable channel
-int UnreliableNetworkLayer::recv(void *buf, int len)
+//receive data from unreliable channel, id is 0/1
+int UnreliableNetworkLayer::recv(void *buf, int len, int id)
 {
     lock_guard<mutex> lg(m);
-    if (message_queue.size() == 0)
+    if (message_queue[!id].size() == 0)
         return 0;
-    auto top = message_queue.front();
-    message_queue.pop();
+    auto top = message_queue[!id].front();
+    message_queue[!id].pop();
     int alen = min(len, top.second);
     memcpy(buf, top.first.get(), alen);
     return alen;
