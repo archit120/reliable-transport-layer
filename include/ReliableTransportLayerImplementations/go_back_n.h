@@ -42,7 +42,7 @@ class GoBackNSender : ReliableTransportLayerSender {
     void notifierFunc();
     void handlePacket();
     thread notifier;
-
+    shared_ptr<bool> isThreadAlive;
     public:
         GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
 
