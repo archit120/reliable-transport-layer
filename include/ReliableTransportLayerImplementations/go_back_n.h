@@ -12,8 +12,12 @@
 
 #include "ReliableTransportLayer/reliable_transport_layer.h"
 #include "helpers/semaphore.h"
+#include "helpers/general.h"
 
 using namespace std;
+
+#define MAX_MESSAGE_SIZE (MAX_PACKET_SIZE-9)
+#define MAX_TIMEOUT_MS 10
 
 // 
 /* 
@@ -45,7 +49,7 @@ class GoBackNSender : ReliableTransportLayerSender {
     const int _N;
     uint32_t base_n;
     uint32_t current_n;
-    queue<pair<shared_ptr<uint8_t>, int>> buffered_packets;
+    deque<tuple<shared_ptr<uint8_t>, uint32_t, chrono::steady_clock::time_point, int>> buffered_packets;
     void notifierFunc();
     void handlePacket();
     void timerFunc();
@@ -60,6 +64,20 @@ class GoBackNSender : ReliableTransportLayerSender {
 
 private:
     int send(const void *msg, int len) override;
+
+};
+
+class GoBackNReceiver: ReliableTransportLayerReceiver {
+    queue<uint8_t> bytebuffer;
+    uint32_t current_n;
+    void notifierFunc();
+    void handlePacket();
+    thread notifier;
+    shared_ptr<bool> isThreadAlive;
+public:
+    GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
+
+    ~GoBackNReceiver();
 
 };
 
