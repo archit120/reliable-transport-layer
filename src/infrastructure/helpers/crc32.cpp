@@ -120,7 +120,7 @@ DWORD updateCRC32(unsigned char ch, DWORD crc)
       return UPDC32(ch, crc);
 }
 
-DWORD crc32buf(char *buf, size_t len)
+DWORD crc32buf(const char *buf, size_t len)
 {
       register DWORD oldcrc32;
 

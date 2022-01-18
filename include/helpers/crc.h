@@ -40,7 +40,7 @@ WORD updcrc(WORD icrc, BYTE *icp, size_t icnt);
 
 DWORD updateCRC32(unsigned char ch, DWORD crc);
 Boolean_T crc32file(char *name, DWORD *crc, long *charcnt);
-DWORD crc32buf(char *buf, size_t len);
+DWORD crc32buf(const char *buf, size_t len);
 
 /*
 **  File: CHECKSUM.C

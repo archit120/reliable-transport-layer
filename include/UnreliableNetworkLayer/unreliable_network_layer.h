@@ -1,6 +1,8 @@
 #ifndef UNRELIABLE_NETWORK_LAYER_H
 #define UNRELIABLE_NETWORK_LAYER_H
 
+#define MAX_PACKET_SIZE 1500
+
 #include <random>
 #include <memory>
 #include <chrono>
@@ -9,9 +11,21 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstring>
+#include <semaphore>
 
 using namespace std;
 
+/*
+ * UnreliableNetworkLayer implements the network layer
+ * It allows bidirectional communication between two hosts identified by id
+ * The id can be 0/1
+ *
+ * The constructor parameters give full control over the "unreliability"
+ * The maximum size of message this layer can send is MAX_PACKET_SIZE
+ *
+ * TODO: Implement bandwith control
+ * TODO: Implement some way to notify listeners
+ */
 class UnreliableNetworkLayer {
     private: 
         double _prob_loss;
@@ -25,7 +39,8 @@ class UnreliableNetworkLayer {
         gamma_distribution<double> delay_distribution;
 
         queue<pair<shared_ptr<uint8_t>, int>> message_queue[2];
-        mutex m;
+        condition_variable listener_cv[2];
+        mutex m[2];
 
     public:
         UnreliableNetworkLayer(double prob_loss=0, double prob_corrupt=0, int expected_delay=1, double bandwidth = 0);
@@ -34,6 +49,7 @@ class UnreliableNetworkLayer {
 
         int recv(void *buf, int len, int id);
 
+    int notify(int id);
 };
 
 #endif
