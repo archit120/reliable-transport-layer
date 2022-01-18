@@ -15,6 +15,8 @@
 
 using namespace std;
 
+#define DEBUG
+
 /*
  * UnreliableNetworkLayer implements the network layer
  * It allows bidirectional communication between two hosts identified by id

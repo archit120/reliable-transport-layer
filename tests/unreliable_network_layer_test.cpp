@@ -34,6 +34,20 @@ TEST(UnreliableNetworkLayer, LossyStream)
     delete [] data;
 
 }
+TEST(UnreliableNetworkLayer, PartialReceive)
+{
+    uint8_t *data = new uint8_t[100]();
+    UnreliableNetworkLayer totallyReliable(0, 0);
+    totallyReliable.send(data, 100, 0);
+    this_thread::sleep_for(chrono::milliseconds(100));
+    int received = 0, x = 0;
+    while ((x = totallyReliable.recv(data, 1, 1)))
+        received += x;
+
+    ASSERT_EQ(received, 100);
+    delete [] data;
+
+}
 
 TEST(UnreliableNetworkLayer, CorruptingStream)
 {
@@ -57,7 +71,7 @@ TEST(UnreliableNetworkLayer, CorruptingStream)
 TEST(UnreliableNetworkLayer, ReorderingStream)
 {
     uint8_t *data = new uint8_t[100]();
-    UnreliableNetworkLayer totallyReliable(0, 0, 30);
+    UnreliableNetworkLayer totallyReliable(0, 0, 10);
     for (int i = 0; i < 100; i++)
         data[0] = i, totallyReliable.send(data, 1, 0);
     this_thread::sleep_for(chrono::milliseconds(100));

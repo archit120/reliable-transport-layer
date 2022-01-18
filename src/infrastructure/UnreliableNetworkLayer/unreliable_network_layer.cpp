@@ -1,5 +1,6 @@
 #include "UnreliableNetworkLayer/unreliable_network_layer.h"
 #include <iostream>
+#include <helpers/general.h>
 
 // TODO: implement bandwidth limits
 // packet is lost with prob_loss, all bytes are independently corrupted by prob_correct, a packet takes a geometric time with expectation expected_delay to reach
@@ -20,6 +21,11 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
 // reject packets larger than MAX_PACKET_SIZE bytes
 int UnreliableNetworkLayer::send(const void *msg, int len, int id)
 {
+#ifdef DEBUG
+    cout << "Sending packet of size " << len << " from " << id << "\n";
+    cout << "Original content is: ";
+    dumpPacket((const uint8_t *)msg, len);
+#endif
     if(len > MAX_PACKET_SIZE)
         return 0;
 
