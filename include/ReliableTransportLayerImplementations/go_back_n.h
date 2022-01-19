@@ -17,7 +17,7 @@
 using namespace std;
 
 #define MAX_MESSAGE_SIZE (MAX_PACKET_SIZE-9)
-#define MAX_TIMEOUT_MS 10
+#define MAX_TIMEOUT_MS 5
 
 // 
 /* 
@@ -62,8 +62,8 @@ class GoBackNSender : ReliableTransportLayerSender {
 
      ~GoBackNSender();
 
-private:
-    int send(const void *msg, int len) override;
+public:
+    int send(const void *msg, int len);
 
 };
 
@@ -78,6 +78,7 @@ public:
     GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
 
     ~GoBackNReceiver();
+    int recv(char *msg, int len);
 
 };
 

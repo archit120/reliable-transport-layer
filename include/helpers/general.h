@@ -17,9 +17,9 @@ result_t since(std::chrono::time_point<clock_t, duration_t> const& start)
 return std::chrono::duration_cast<result_t>(clock_t::now() - start);
 }
 
-void dumpPacket(const uint8_t* msg, int len) {
+inline void dumpPacket(const uint8_t* msg, int len) {
     for(int i =0;i<len;i++)
-        cout << msg[i] << " ";
+        cout << (int)msg[i] << " ";
 }
 
 #endif //RELIABLE_TRANSPORT_LAYER_GENERAL_H

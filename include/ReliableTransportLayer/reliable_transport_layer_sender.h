@@ -29,7 +29,7 @@ public:
     {
     }
 
-    virtual int send(const void *msg, int len);
+    int send(const void *msg, int len);
 };
 
 #endif

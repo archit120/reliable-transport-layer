@@ -25,6 +25,7 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
     cout << "Sending packet of size " << len << " from " << id << "\n";
     cout << "Original content is: ";
     dumpPacket((const uint8_t *)msg, len);
+    cout << "\n";
 #endif
     if(len > MAX_PACKET_SIZE)
         return 0;
@@ -37,6 +38,8 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
     for (int i = 0; i < len; i++)
         if (corrupt_distribution(generator))
             temp_buffer.get()[i] = (uint8_t)rand();
+    dumpPacket((const uint8_t *)temp_buffer.get(), len);
+    cout << "\n";
 
     if (_expected_delay == 1)
     {
@@ -66,12 +69,21 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
 int UnreliableNetworkLayer::recv(void *buf, int len, int id)
 {
     lock_guard<mutex> lg(m[id]);
-    while (message_queue[id].size() == 0)
+    if (message_queue[id].size() == 0)
         return 0;
     auto top = message_queue[id].front();
-    message_queue[id].pop();
-    int alen = min(len, top.second);
-    memcpy(buf, top.first.get(), alen);
+    int alen = 0;
+    if(len >= top.second - partial_read) {
+        message_queue[id].pop();
+        alen = top.second - partial_read;
+        memcpy(buf, top.first.get()+partial_read, top.second - partial_read);
+        partial_read = 0;
+    }
+    else {
+        alen = len;
+        memcpy(buf, top.first.get()+partial_read, len);
+        partial_read += len;
+    }
     return alen;
 }
 

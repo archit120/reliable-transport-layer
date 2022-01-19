@@ -11,7 +11,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstring>
-#include <semaphore>
 
 using namespace std;
 
@@ -35,6 +34,7 @@ class UnreliableNetworkLayer {
         int _expected_delay;
         double _bandwith;
 
+        int partial_read = 0;
         default_random_engine generator;
         bernoulli_distribution loss_distribution;
         bernoulli_distribution corrupt_distribution;

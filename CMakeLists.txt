@@ -26,7 +26,8 @@ add_library(
 
 add_executable(
   tests
-  tests/unreliable_network_layer_test.cpp
+        tests/unreliable_network_layer_test.cpp
+        tests/gbn_test.cpp
 )
 target_link_libraries(
   tests
