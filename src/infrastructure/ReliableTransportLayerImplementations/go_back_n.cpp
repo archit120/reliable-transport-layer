@@ -8,40 +8,44 @@ bool checkPacket(const void* msg, int len) {
 }
 
 void GoBackNSender::notifierFunc() {
-//    try {
+    try {
 //        Wait for something to happen
-        while(_notify() && *isThreadAlive) {
+        shared_ptr<bool> localCopy = isThreadAlive;
+        while(_notify() && *localCopy) {
 //            Potential Race
             handlePacket();
         }
-//    }
-//    catch (exception& e) {
-////        Catch all exception, ignore and die
-//    }
+    }
+    catch (exception& e) {
+//        Catch all exception, ignore and die
+    }
 }
 
 
 GoBackNSender::GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliable_network_layer) : _N(N), ReliableTransportLayerSender(unreliable_network_layer) {
-    notifier = thread(&GoBackNSender::notifierFunc, this);
-    timer = thread(&GoBackNSender::timerFunc, this);
     isThreadAlive = shared_ptr<bool>(new bool());
     *isThreadAlive = true;
+    notifier = thread(&GoBackNSender::notifierFunc, this);
+    timer = thread(&GoBackNSender::timerFunc, this);
+
     semaphore.reset(new Semaphore(N));
     base_n = 0;
     current_n = 0;
+    notifier.detach();
+    timer.detach();
+
 }
 
 GoBackNSender::~GoBackNSender() {
+    cout << "Destroy GBN Sender\n";
     *isThreadAlive = false;
-    notifier.detach();
-    timer.detach();
 }
 
 // blocks if queue is full
 int GoBackNSender::send(const void *msg, int len) {
     if(len > MAX_MESSAGE_SIZE) {
         for(int i = 0;i<len; i+=MAX_MESSAGE_SIZE)
-            send(msg+i, min(MAX_MESSAGE_SIZE, len-i));
+            send((uint8_t *)msg+i, min(MAX_MESSAGE_SIZE, len-i));
         return len;
     }
     shared_ptr<uint8_t> buffer(new uint8_t[MAX_PACKET_SIZE], default_delete<uint8_t[]>());
@@ -73,8 +77,9 @@ void GoBackNSender::handlePacket() {
 }
 
 void GoBackNSender::timerFunc() {
-//    try {
-        while (*isThreadAlive) {
+    try {
+        shared_ptr<bool> localCopy = isThreadAlive;
+        while (*localCopy) {
             this_thread::sleep_for(chrono::milliseconds(MAX_TIMEOUT_MS));
             cout << "Timer thread \n";
 //            TODO: handle warping of seqno
@@ -82,7 +87,7 @@ void GoBackNSender::timerFunc() {
                 cout << "Removing buffered packet " << get<1>(buffered_packets.front()) << "\n";
                 buffered_packets.pop_front();
             }
-            if(!buffered_packets.size())    return;
+            if(!buffered_packets.size())    continue;
             if(since(get<2>(buffered_packets.front())).count() < MAX_TIMEOUT_MS)
                 continue;
 
@@ -94,24 +99,26 @@ void GoBackNSender::timerFunc() {
                 buffered_packets.push_back(make_tuple(get<0>(buffered_packet), get<1>(buffered_packet), chrono::steady_clock::now(), get<3>(buffered_packet)));
             }
         }
-//    }
-//    catch (exception& e) {
-//
-//    }
+    }
+    catch (exception& e) {
+
+    }
 }
 
 
 void GoBackNReceiver::notifierFunc() {
-//    try {
+    try {
 //        Wait for something to happen
-    while(_notify() && *isThreadAlive) {
+        shared_ptr<bool> localCopy = isThreadAlive;
+
+    while(_notify() && *localCopy) {
 //            Potential Race
         handlePacket();
     }
-//    }
-//    catch (exception& e) {
-////        Catch all exception, ignore and die
-//    }
+    }
+    catch (exception& e) {
+//        Catch all exception, ignore and die
+    }
 
 }
 
@@ -149,15 +156,17 @@ void GoBackNReceiver::handlePacket() {
 GoBackNReceiver::GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer)
         : ReliableTransportLayerReceiver(unreliable_network_layer) {
     current_n = 0;
-    notifier = thread(&GoBackNReceiver::notifierFunc, this);
     isThreadAlive = shared_ptr<bool>(new bool());
     *isThreadAlive = true;
+    notifier = thread(&GoBackNReceiver::notifierFunc, this);
+
+    notifier.detach();
 
 }
 
 GoBackNReceiver::~GoBackNReceiver() {
     *isThreadAlive = false;
-    notifier.detach();
+    cout << "Destroy GBN Receiver\n";
 
 }
 

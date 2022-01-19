@@ -80,7 +80,7 @@ TEST(UnreliableNetworkLayer, ReorderingStream)
     int cmin = -1;
     for (int i = 0; i < 100; i++)
     {
-
+        totallyReliable.notify(1);
         received += totallyReliable.recv(data, 1, 1);
         // cout << (int)data[0] << "\n";
         if(data[0] != cmin+1)
