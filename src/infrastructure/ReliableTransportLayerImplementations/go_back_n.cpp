@@ -3,6 +3,7 @@
 
 
 bool checkPacket(const void* msg, int len) {
+    if(len < 4) return false;
     uint32_t crc = crc32buf((const char *)msg+4, len-4);
     return crc == ((const uint32_t*)msg)[0];
 }
@@ -31,14 +32,14 @@ GoBackNSender::GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliabl
     semaphore.reset(new Semaphore(N));
     base_n = 0;
     current_n = 0;
-    notifier.detach();
-    timer.detach();
-
 }
 
 GoBackNSender::~GoBackNSender() {
     cout << "Destroy GBN Sender\n";
     *isThreadAlive = false;
+    _fake_notify();
+    timer.join();
+    notifier.join();
 }
 
 // blocks if queue is full
@@ -160,13 +161,14 @@ GoBackNReceiver::GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_n
     *isThreadAlive = true;
     notifier = thread(&GoBackNReceiver::notifierFunc, this);
 
-    notifier.detach();
 
 }
 
 GoBackNReceiver::~GoBackNReceiver() {
     *isThreadAlive = false;
     cout << "Destroy GBN Receiver\n";
+    _fake_notify();
+    notifier.join();
 
 }
 

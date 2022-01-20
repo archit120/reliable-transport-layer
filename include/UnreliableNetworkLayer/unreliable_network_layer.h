@@ -52,6 +52,7 @@ class UnreliableNetworkLayer {
         int recv(void *buf, int len, int id);
 
     int notify(int id);
+    int fake_notify(int id);
 };
 
 #endif

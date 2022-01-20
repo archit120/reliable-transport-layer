@@ -25,6 +25,10 @@ protected:
         return _unreliable_network_layer->send(msg, len, 1);
     }
 
+    int _fake_notify() {
+        return _unreliable_network_layer->fake_notify(1);
+    }
+
 public:
     ReliableTransportLayerReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer) : _unreliable_network_layer(unreliable_network_layer)
     {

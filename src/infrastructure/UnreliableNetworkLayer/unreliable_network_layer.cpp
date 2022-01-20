@@ -95,3 +95,15 @@ int UnreliableNetworkLayer::notify(int id)
         listener_cv[id].wait(lg);
     return 1;
 }
+
+int UnreliableNetworkLayer::fake_notify(int id) {
+    unique_lock<mutex> lg(m[id]);
+    shared_ptr<uint8_t> fbuffer(0);
+    message_queue[id].push(make_pair(fbuffer, 0));
+    listener_cv[id].notify_all();
+    return 0;
+}
+
+//UnreliableNetworkLayer::~UnreliableNetworkLayer() {
+////    TODO: figure out a way to release notify lisetners
+//}
