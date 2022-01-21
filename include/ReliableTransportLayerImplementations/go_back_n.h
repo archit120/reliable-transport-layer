@@ -17,7 +17,7 @@
 using namespace std;
 
 #define MAX_MESSAGE_SIZE (MAX_PACKET_SIZE-9)
-#define MAX_TIMEOUT_MS 5
+#define MAX_TIMEOUT_MS 15
 
 // 
 /* 

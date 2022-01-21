@@ -71,7 +71,7 @@ void GoBackNSender::handlePacket() {
     uint8_t flags = ((const char*)buffer)[8];
     if(!(flags&1))    return;
 
-    cout << "Successfully handled ACK for " << seqno << "\n";
+    SPDLOG_DEBUG("Successfully handled ACK for {}", seqno);
     while(base_n < seqno)
         base_n++, semaphore->up();
 
@@ -82,10 +82,9 @@ void GoBackNSender::timerFunc() {
         shared_ptr<bool> localCopy = isThreadAlive;
         while (*localCopy) {
             this_thread::sleep_for(chrono::milliseconds(MAX_TIMEOUT_MS));
-            cout << "Timer thread \n";
 //            TODO: handle warping of seqno
             while(buffered_packets.size() && get<1>(buffered_packets.front()) <= base_n) {
-                cout << "Removing buffered packet " << get<1>(buffered_packets.front()) << "\n";
+                SPDLOG_DEBUG("Removing buffered packet {0}", get<1>(buffered_packets.front()));
                 buffered_packets.pop_front();
             }
             if(!buffered_packets.size())    continue;
@@ -135,7 +134,7 @@ void GoBackNReceiver::handlePacket() {
     if(seqno > current_n+1)
         return;
     if(current_n == seqno-1) {
-        cout << "Adding content of " << seqno << " into buffer\n";
+        SPDLOG_DEBUG("Adding content of {} into buffer", seqno);
         dumpPacket((const uint8_t*)buffer+9, len-9);
         cout << "\n";
         for (int i = 0; i < len - 9; i++)
@@ -166,7 +165,6 @@ GoBackNReceiver::GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_n
 
 GoBackNReceiver::~GoBackNReceiver() {
     *isThreadAlive = false;
-    cout << "Destroy GBN Receiver\n";
     _fake_notify();
     notifier.join();
 

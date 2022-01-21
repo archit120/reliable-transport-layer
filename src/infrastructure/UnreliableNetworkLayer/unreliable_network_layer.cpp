@@ -21,12 +21,8 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
 // reject packets larger than MAX_PACKET_SIZE bytes
 int UnreliableNetworkLayer::send(const void *msg, int len, int id)
 {
-#ifdef DEBUG
-    cout << "Sending packet of size " << len << " from " << id << "\n";
-    cout << "Original content is: ";
+    SPDLOG_DEBUG("Sending packet of size {} from {}", len ,id);
     dumpPacket((const uint8_t *)msg, len);
-    cout << "\n";
-#endif
     if(len > MAX_PACKET_SIZE)
         return 0;
 
@@ -68,6 +64,7 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
 //receive data from unreliable channel, id is 0/1
 int UnreliableNetworkLayer::recv(void *buf, int len, int id)
 {
+
     lock_guard<mutex> lg(m[id]);
     if (message_queue[id].size() == 0)
         return 0;
@@ -84,19 +81,27 @@ int UnreliableNetworkLayer::recv(void *buf, int len, int id)
         memcpy(buf, top.first.get()+partial_read, len);
         partial_read += len;
     }
+    SPDLOG_DEBUG("Receiving packet of size {} at {}", alen ,id);
+
     return alen;
 }
 
 // returns only when a new packet arrives
 int UnreliableNetworkLayer::notify(int id)
 {
+    SPDLOG_DEBUG("Notifier for {} locked", id);
+
     unique_lock<mutex> lg(m[id]);
     while (message_queue[id].size() == 0)
         listener_cv[id].wait(lg);
+    SPDLOG_DEBUG("Notifier for {} unlocked", id);
+
     return 1;
 }
 
 int UnreliableNetworkLayer::fake_notify(int id) {
+    SPDLOG_DEBUG("Fake notify for {}", id);
+
     unique_lock<mutex> lg(m[id]);
     shared_ptr<uint8_t> fbuffer(0);
     message_queue[id].push(make_pair(fbuffer, 0));

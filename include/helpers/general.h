@@ -18,8 +18,11 @@ return std::chrono::duration_cast<result_t>(clock_t::now() - start);
 }
 
 inline void dumpPacket(const uint8_t* msg, int len) {
+#if (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE)
     for(int i =0;i<len;i++)
         cout << (int)msg[i] << " ";
+    cout << "\n";
+#endif
 }
 
 #endif //RELIABLE_TRANSPORT_LAYER_GENERAL_H

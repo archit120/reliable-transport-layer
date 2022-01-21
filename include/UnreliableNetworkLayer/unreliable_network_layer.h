@@ -11,10 +11,9 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstring>
+#include <spdlog/spdlog.h>
 
 using namespace std;
-
-#define DEBUG
 
 /*
  * UnreliableNetworkLayer implements the network layer
