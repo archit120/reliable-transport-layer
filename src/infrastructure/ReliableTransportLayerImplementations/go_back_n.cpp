@@ -35,7 +35,6 @@ GoBackNSender::GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliabl
 }
 
 GoBackNSender::~GoBackNSender() {
-    cout << "Destroy GBN Sender\n";
     *isThreadAlive = false;
     _fake_notify();
     timer.join();
@@ -55,6 +54,8 @@ int GoBackNSender::send(const void *msg, int len) {
     semaphore->down();
     ((uint32_t*)buffer.get())[1] = ++current_n;
     ((uint32_t*)buffer.get())[0] = crc32buf(reinterpret_cast<const char *>(buffer.get() + 4), len + 5) ;
+    lock_guard<mutex> lg(bufferLock);
+
     buffered_packets.push_back(make_tuple(buffer, current_n, chrono::steady_clock::now(), len+9));
     return ReliableTransportLayerSender::_send(buffer.get(), len+9);
 }
@@ -83,6 +84,7 @@ void GoBackNSender::timerFunc() {
         while (*localCopy) {
             this_thread::sleep_for(chrono::milliseconds(MAX_TIMEOUT_MS));
 //            TODO: handle warping of seqno
+            lock_guard<mutex> lg(bufferLock);
             while(buffered_packets.size() && get<1>(buffered_packets.front()) <= base_n) {
                 SPDLOG_DEBUG("Removing buffered packet {0}", get<1>(buffered_packets.front()));
                 buffered_packets.pop_front();
@@ -90,7 +92,7 @@ void GoBackNSender::timerFunc() {
             if(!buffered_packets.size())    continue;
             if(since(get<2>(buffered_packets.front())).count() < MAX_TIMEOUT_MS)
                 continue;
-
+            SPDLOG_DEBUG("Timer expired for packet {0}", get<1>(buffered_packets.front()));
             for(int i =0;i<buffered_packets.size();i++) {
 //                time to resend all packets! :(
                 auto buffered_packet = buffered_packets.front();
@@ -136,7 +138,6 @@ void GoBackNReceiver::handlePacket() {
     if(current_n == seqno-1) {
         SPDLOG_DEBUG("Adding content of {} into buffer", seqno);
         dumpPacket((const uint8_t*)buffer+9, len-9);
-        cout << "\n";
         for (int i = 0; i < len - 9; i++)
             bytebuffer.push(buffer[i + 9]);
     }
@@ -147,6 +148,7 @@ void GoBackNReceiver::handlePacket() {
    ACKbuffer[8] = 1;
     ((uint32_t*)ACKbuffer)[1] = current_n;
     ((uint32_t*)ACKbuffer)[0] = crc32buf(reinterpret_cast<const char *>(ACKbuffer + 4), 5);
+    SPDLOG_DEBUG("Send ACK for {}", seqno);
 
     _send(ACKbuffer, 9);
 

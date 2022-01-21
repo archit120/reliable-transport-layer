@@ -21,7 +21,7 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
 // reject packets larger than MAX_PACKET_SIZE bytes
 int UnreliableNetworkLayer::send(const void *msg, int len, int id)
 {
-    SPDLOG_DEBUG("Sending packet of size {} from {}", len ,id);
+    SPDLOG_TRACE("Sending packet of size {} from {}", len ,id);
     dumpPacket((const uint8_t *)msg, len);
     if(len > MAX_PACKET_SIZE)
         return 0;
@@ -35,7 +35,6 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
         if (corrupt_distribution(generator))
             temp_buffer.get()[i] = (uint8_t)rand();
     dumpPacket((const uint8_t *)temp_buffer.get(), len);
-    cout << "\n";
 
     if (_expected_delay == 1)
     {
@@ -45,7 +44,6 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
         return len;
     }
     int delay = (int)(delay_distribution(generator) + 1);
-    // cout << delay << "\n";
     // no timers in Cpp so create a new thread and detach
 
     thread timerthread([delay, temp_buffer, len, id, this]()
@@ -81,7 +79,7 @@ int UnreliableNetworkLayer::recv(void *buf, int len, int id)
         memcpy(buf, top.first.get()+partial_read, len);
         partial_read += len;
     }
-    SPDLOG_DEBUG("Receiving packet of size {} at {}", alen ,id);
+    SPDLOG_TRACE("Receiving packet of size {} at {}", alen ,id);
 
     return alen;
 }
@@ -89,12 +87,12 @@ int UnreliableNetworkLayer::recv(void *buf, int len, int id)
 // returns only when a new packet arrives
 int UnreliableNetworkLayer::notify(int id)
 {
-    SPDLOG_DEBUG("Notifier for {} locked", id);
+    SPDLOG_TRACE("Notifier for {} locked", id);
 
     unique_lock<mutex> lg(m[id]);
     while (message_queue[id].size() == 0)
         listener_cv[id].wait(lg);
-    SPDLOG_DEBUG("Notifier for {} unlocked", id);
+    SPDLOG_TRACE("Notifier for {} unlocked", id);
 
     return 1;
 }
@@ -109,6 +107,3 @@ int UnreliableNetworkLayer::fake_notify(int id) {
     return 0;
 }
 
-//UnreliableNetworkLayer::~UnreliableNetworkLayer() {
-////    TODO: figure out a way to release notify lisetners
-//}

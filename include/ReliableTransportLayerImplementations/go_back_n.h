@@ -47,7 +47,7 @@ Receiver does not buffer packets received out of order.
 */
 class GoBackNSender : ReliableTransportLayerSender {
     const int _N;
-    uint32_t base_n;
+    atomic<uint32_t> base_n;
     uint32_t current_n;
     deque<tuple<shared_ptr<uint8_t>, uint32_t, chrono::steady_clock::time_point, int>> buffered_packets;
     void notifierFunc();
@@ -57,6 +57,7 @@ class GoBackNSender : ReliableTransportLayerSender {
     thread timer;
     shared_ptr<bool> isThreadAlive;
     unique_ptr<Semaphore> semaphore;
+    mutex bufferLock;
     public:
         GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
 
