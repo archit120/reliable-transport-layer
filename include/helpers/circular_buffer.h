@@ -15,14 +15,17 @@ private:
     unique_ptr<T[]> internalBuffer;
     size_t startPos=0, endPos=0;
     size_t maxSize;
+    bool _full = false;
 public:
     CircularBuffer(size_t maxSize);
 
-    int extend(T*, int len);
+    int extend(T*, size_t len);
 
-    int shift(T*, int size);
+    int remove(T*, size_t size);
 
     bool full();
+
+    size_t len();
 };
 
 

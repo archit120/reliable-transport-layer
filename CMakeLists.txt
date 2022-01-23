@@ -35,7 +35,8 @@ add_library(
   infrastructure 
   "src/infrastructure/UnreliableNetworkLayer/unreliable_network_layer.cpp"
   "src/infrastructure/ReliableTransportLayerImplementations/go_back_n.cpp"
-  "src/infrastructure/helpers/crc32.cpp"
+"src/infrastructure/helpers/crc32.cpp"
+"src/infrastructure/helpers/circular_buffer.cpp"
 )
 
 target_link_libraries(infrastructure spdlog::spdlog)

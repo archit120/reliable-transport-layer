@@ -1,7 +1,7 @@
 #ifndef UNRELIABLE_NETWORK_LAYER_H
 #define UNRELIABLE_NETWORK_LAYER_H
 
-#define MAX_PACKET_SIZE 1500
+#define MAX_PACKET_SIZE 20
 
 #include <random>
 #include <memory>

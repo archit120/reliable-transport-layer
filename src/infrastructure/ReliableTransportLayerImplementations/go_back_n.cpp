@@ -138,8 +138,7 @@ void GoBackNReceiver::handlePacket() {
     if(current_n == seqno-1) {
         SPDLOG_DEBUG("Adding content of {} into buffer", seqno);
         dumpPacket((const uint8_t*)buffer+9, len-9);
-        for (int i = 0; i < len - 9; i++)
-            bytebuffer.push(buffer[i + 9]);
+        circularBuffer.extend(reinterpret_cast<unsigned char *>(buffer + 9), len - 9);
     }
     current_n = max(seqno, current_n);
 
@@ -156,7 +155,7 @@ void GoBackNReceiver::handlePacket() {
 }
 
 GoBackNReceiver::GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer)
-        : ReliableTransportLayerReceiver(unreliable_network_layer) {
+        : ReliableTransportLayerReceiver(unreliable_network_layer), circularBuffer(10000) {
     current_n = 0;
     isThreadAlive = shared_ptr<bool>(new bool());
     *isThreadAlive = true;
@@ -173,8 +172,5 @@ GoBackNReceiver::~GoBackNReceiver() {
 }
 
 int GoBackNReceiver::recv(char *msg, int len) {
-    int i;
-    for( i =0;i<len && bytebuffer.size();i++)
-        msg[i] = bytebuffer.front(), bytebuffer.pop();
-    return i;
+    return circularBuffer.remove(reinterpret_cast<unsigned char *>(msg), len);
 }

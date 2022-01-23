@@ -13,11 +13,13 @@
 #include "ReliableTransportLayer/reliable_transport_layer.h"
 #include "helpers/semaphore.h"
 #include "helpers/general.h"
+#include "helpers/circular_buffer.h"
 
 using namespace std;
 
 #define MAX_MESSAGE_SIZE (MAX_PACKET_SIZE-9)
 #define MAX_TIMEOUT_MS 15
+#define GBN_RECEIVER_BUFFER_SIZE MAX_PACKET_SIZE*100
 
 // 
 /* 
@@ -69,7 +71,7 @@ public:
 };
 
 class GoBackNReceiver: ReliableTransportLayerReceiver {
-    queue<uint8_t> bytebuffer;
+    CircularBuffer<uint8_t> circularBuffer;
     uint32_t current_n;
     void notifierFunc();
     void handlePacket();
