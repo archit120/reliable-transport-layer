@@ -7,7 +7,7 @@ project(reliable_transport_layer)
 
 
 # define verbose for packet dump
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_ACTIVE_LEVEL=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_ACTIVE_LEVEL=2")
 
 
 #Fetch GTest

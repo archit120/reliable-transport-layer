@@ -70,7 +70,7 @@ public:
 
 };
 
-class GoBackNReceiver: ReliableTransportLayerReceiver {
+class GoBackNReceiver: public ReliableTransportLayerReceiver {
     CircularBuffer<uint8_t> circularBuffer;
     uint32_t current_n;
     void notifierFunc();
@@ -81,8 +81,7 @@ public:
     GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
 
     ~GoBackNReceiver();
-    int recv(char *msg, int len);
-
+    int recv(void *buf, int len) override;
 };
 
 #endif

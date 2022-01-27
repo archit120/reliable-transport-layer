@@ -171,6 +171,7 @@ GoBackNReceiver::~GoBackNReceiver() {
 
 }
 
-int GoBackNReceiver::recv(char *msg, int len) {
+int GoBackNReceiver::recv(void *msg, int len) {
     return circularBuffer.remove(reinterpret_cast<unsigned char *>(msg), len);
 }
+

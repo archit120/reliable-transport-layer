@@ -15,14 +15,11 @@ TEST(GoBackN, TotallyReliableTransmit) {
 
     goBackNSender.send(test_string.c_str(), test_string.size());
     char received[100];
-    cout << "sleep\n";
     this_thread::sleep_for(chrono::milliseconds (500));
-    cout << "sleep wake\n";
     int len = goBackNReceiver.recv(received, 100);
     received[len] = 0;
     ASSERT_EQ(len, test_string.size());
     ASSERT_EQ(string(received), test_string);
-    cout << "ended\n";
 }
 
 TEST(GoBackN, CorruptingTransmit) {
@@ -82,8 +79,8 @@ TEST(GoBackN, LongTransmitCorruptingLossyReordering) {
     GoBackNReceiver goBackNReceiver(unreliableNetworkLayer);
 
     goBackNSender.send(longTest.c_str(), longTest.size());
-    this_thread::sleep_for(chrono::milliseconds (500));
-    int len = goBackNReceiver.recv(received, 9000);
+//    this_thread::sleep_for(chrono::milliseconds (10));
+    int len = goBackNReceiver.recv_block(received, 8500);
     received[len] = 0;
     ASSERT_EQ(len, longTest.size());
     ASSERT_EQ(string(received), longTest);

@@ -34,7 +34,20 @@ public:
     {
     }
 
-    int recv(void *buf, int len);
+    virtual int recv(void *buf, int len);
+
+/*
+ * This function will block until exactly len bytes can be returned. There is
+ * no way to preempt this function from userland. Be careful!
+ */
+    int recv_block(void* buf, int len) {
+        int actual = 0;
+        while(actual< len) {
+            _notify();
+            actual += recv((uint8_t*)buf+actual, len-actual);
+        }
+        return actual;
+    }
 };
 
 #endif

@@ -46,15 +46,15 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
     int delay = (int)(delay_distribution(generator) + 1);
     // no timers in Cpp so create a new thread and detach
 
-    thread timerthread([delay, temp_buffer, len, id, this]()
-                       {
-                           this_thread::sleep_for(chrono::microseconds(delay));
+//    thread timerthread([delay, temp_buffer, len, id, this]()
+//                       {
+                           //this_thread::sleep_for(chrono::microseconds(delay));
                            lock_guard<mutex> lg(m[!id]);
                            message_queue[!id].push(make_pair(temp_buffer, len));
                            listener_cv[!id].notify_one();
-                       });
-
-    timerthread.detach();
+//                       });
+//
+//    timerthread.detach();
 
     return len;
 }
