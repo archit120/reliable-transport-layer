@@ -6,6 +6,7 @@
 #define RELIABLE_TRANSPORT_LAYER_CIRCULAR_BUFFER_H
 
 #include <memory>
+#include <cstring>
 
 using namespace std;
 
