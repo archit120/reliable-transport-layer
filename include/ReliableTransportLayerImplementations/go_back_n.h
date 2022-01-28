@@ -35,7 +35,7 @@ packet structure
 
  flag structure
 
- <7 bits unused><1 bit ACK>
+ <6 bits unused><1 bit message><1 bit ACK>
 
 CRC-32 is calculated on the header+data.
 ACKs are cumulative.

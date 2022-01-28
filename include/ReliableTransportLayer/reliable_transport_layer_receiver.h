@@ -34,7 +34,9 @@ public:
     {
     }
 
-    virtual int recv(void *buf, int len);
+    virtual int recv(void *buf, int len) {
+        return 0;
+    }
 
 /*
  * This function will block until exactly len bytes can be returned. There is

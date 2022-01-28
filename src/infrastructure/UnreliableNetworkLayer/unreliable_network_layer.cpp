@@ -13,8 +13,24 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
     loss_distribution = bernoulli_distribution(prob_loss);
     corrupt_distribution = bernoulli_distribution(prob_corrupt);
 
-    if (_expected_delay != 1)
-        delay_distribution = gamma_distribution<double>(7, expected_delay/7.0);
+    if (_expected_delay != 1) {
+        delay_distribution = gamma_distribution<double>(7, expected_delay / 7.0);
+        timer = thread([this]() {
+           while(!is_dying) {
+               clock++;
+               for(int i = 0;i<2;i++) {
+                   lock_guard<mutex> lg(m[i]);
+                   while(message_timer_queue[i].size() && get<0>(message_timer_queue[i].top()) >= clock) {
+                       auto newp = message_timer_queue[i].top();
+                       message_timer_queue[i].pop();
+                       message_queue[i].push(make_pair(get<2>(newp), get<1>(newp)));
+                       listener_cv[i].notify_one();
+                   }
+                   this_thread::sleep_for(chrono::microseconds(1));
+               }
+           }
+        });
+    }
 }
 
 // send data into unreliable channel, id is 0/1
@@ -46,15 +62,8 @@ int UnreliableNetworkLayer::send(const void *msg, int len, int id)
     int delay = (int)(delay_distribution(generator) + 1);
     // no timers in Cpp so create a new thread and detach
 
-//    thread timerthread([delay, temp_buffer, len, id, this]()
-//                       {
-                           //this_thread::sleep_for(chrono::microseconds(delay));
-                           lock_guard<mutex> lg(m[!id]);
-                           message_queue[!id].push(make_pair(temp_buffer, len));
-                           listener_cv[!id].notify_one();
-//                       });
-//
-//    timerthread.detach();
+   lock_guard<mutex> lg(m[!id]);
+    message_timer_queue[!id].push(make_tuple(delay+clock, len, temp_buffer));
 
     return len;
 }
@@ -105,5 +114,10 @@ int UnreliableNetworkLayer::fake_notify(int id) {
     message_queue[id].push(make_pair(fbuffer, 0));
     listener_cv[id].notify_all();
     return 0;
+}
+
+UnreliableNetworkLayer::~UnreliableNetworkLayer() {
+    is_dying = false;
+    timer.join();
 }
 
