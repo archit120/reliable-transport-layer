@@ -62,8 +62,7 @@ TEST(GoBackN, LongTransmitCorruptingLossy) {
     GoBackNReceiver goBackNReceiver(unreliableNetworkLayer);
 
     goBackNSender.send(longTest.c_str(), longTest.size());
-    this_thread::sleep_for(chrono::milliseconds (500));
-    int len = goBackNReceiver.recv(received, 4000);
+    int len = goBackNReceiver.recv_block(received, 3500);
     received[len] = 0;
     ASSERT_EQ(len, longTest.size());
     ASSERT_EQ(string(received), longTest);
@@ -79,8 +78,8 @@ TEST(GoBackN, LongTransmitCorruptingLossyReordering) {
     GoBackNReceiver goBackNReceiver(unreliableNetworkLayer);
 
     goBackNSender.send(longTest.c_str(), longTest.size());
-    this_thread::sleep_for(chrono::milliseconds (10));
-    int len = goBackNReceiver.recv(received, 8500);
+   // this_thread::sleep_for(chrono::milliseconds (10));
+    int len = goBackNReceiver.recv_block(received, 8500);
     received[len] = 0;
     ASSERT_EQ(len, longTest.size());
     ASSERT_EQ(string(received), longTest);

@@ -175,3 +175,7 @@ int GoBackNReceiver::recv(void *msg, int len) {
     return circularBuffer.remove(reinterpret_cast<unsigned char *>(msg), len);
 }
 
+int GoBackNReceiver::notify() {
+    return ReliableTransportLayerReceiver::notify();
+}
+

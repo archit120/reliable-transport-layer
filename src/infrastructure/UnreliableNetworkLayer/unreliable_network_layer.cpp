@@ -12,7 +12,7 @@ UnreliableNetworkLayer::UnreliableNetworkLayer(double prob_loss, double prob_cor
 
     loss_distribution = bernoulli_distribution(prob_loss);
     corrupt_distribution = bernoulli_distribution(prob_corrupt);
-
+    is_dying = false;
     if (_expected_delay != 1) {
         delay_distribution = gamma_distribution<double>(7, expected_delay / 7.0);
         timer = thread([this]() {
@@ -117,7 +117,8 @@ int UnreliableNetworkLayer::fake_notify(int id) {
 }
 
 UnreliableNetworkLayer::~UnreliableNetworkLayer() {
-    is_dying = false;
-    timer.join();
+    is_dying = true;
+    if(_expected_delay != 1)
+        timer.join();
 }
 

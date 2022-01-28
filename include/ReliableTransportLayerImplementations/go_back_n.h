@@ -72,10 +72,17 @@ public:
 
 class GoBackNReceiver: public ReliableTransportLayerReceiver {
     CircularBuffer<uint8_t> circularBuffer;
+    condition_variable cv;
+    mutex bufferLock;
+
     uint32_t current_n;
     void notifierFunc();
     void handlePacket();
     thread notifier;
+public:
+    int notify() override;
+
+private:
     shared_ptr<bool> isThreadAlive;
 public:
     GoBackNReceiver(shared_ptr<UnreliableNetworkLayer> unreliable_network_layer);
