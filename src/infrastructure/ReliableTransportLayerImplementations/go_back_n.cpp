@@ -138,7 +138,10 @@ void GoBackNReceiver::handlePacket() {
     if(current_n == seqno-1) {
         SPDLOG_DEBUG("Adding content of {} into buffer", seqno);
         dumpPacket((const uint8_t*)buffer+9, len-9);
+        unique_lock<mutex> lg(bufferLock);
         circularBuffer.extend(reinterpret_cast<unsigned char *>(buffer + 9), len - 9);
+        lg.unlock();
+        cv.notify_all();
     }
     current_n = max(seqno, current_n);
 
@@ -172,10 +175,18 @@ GoBackNReceiver::~GoBackNReceiver() {
 }
 
 int GoBackNReceiver::recv(void *msg, int len) {
+    lock_guard<mutex> lg(bufferLock);
     return circularBuffer.remove(reinterpret_cast<unsigned char *>(msg), len);
 }
 
 int GoBackNReceiver::notify() {
-    return ReliableTransportLayerReceiver::notify();
+    SPDLOG_TRACE("Notifier for {} locked", id);
+
+    unique_lock<mutex> lg(bufferLock);
+    while (circularBuffer.len() == 0)
+            cv.wait(lg);
+    SPDLOG_TRACE("Notifier for {} unlocked", id);
+
+    return 1;
 }
 

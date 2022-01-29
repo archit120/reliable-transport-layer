@@ -38,7 +38,9 @@ public:
         return 0;
     }
 
-    virtual int notify();
+    virtual int notify() {
+        return 0;
+    }
 /*
  * This function will block until exactly len bytes can be returned. There is
  * no way to preempt this function from userland. Be careful!

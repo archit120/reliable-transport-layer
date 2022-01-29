@@ -15,8 +15,7 @@ TEST(GoBackN, TotallyReliableTransmit) {
 
     goBackNSender.send(test_string.c_str(), test_string.size());
     char received[100];
-    this_thread::sleep_for(chrono::milliseconds (500));
-    int len = goBackNReceiver.recv(received, 100);
+    int len = goBackNReceiver.recv_block(received, 4);
     received[len] = 0;
     ASSERT_EQ(len, test_string.size());
     ASSERT_EQ(string(received), test_string);
@@ -29,8 +28,7 @@ TEST(GoBackN, CorruptingTransmit) {
 
     goBackNSender.send(test_string.c_str(), test_string.size());
     char received[100];
-    this_thread::sleep_for(chrono::milliseconds (500));
-    int len = goBackNReceiver.recv(received, 100);
+    int len = goBackNReceiver.recv_block(received, 4);
     received[len] = 0;
     ASSERT_EQ(len, test_string.size());
     ASSERT_EQ(string(received), test_string);
@@ -46,8 +44,7 @@ TEST(GoBackN, LongTransmit) {
     GoBackNReceiver goBackNReceiver(unreliableNetworkLayer);
 
     goBackNSender.send(longTest.c_str(), longTest.size());
-    this_thread::sleep_for(chrono::milliseconds (500));
-    int len = goBackNReceiver.recv(received, 8000);
+    int len = goBackNReceiver.recv_block(received, 6500);
     received[len] = 0;
     ASSERT_EQ(len, longTest.size());
 }
