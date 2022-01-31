@@ -35,6 +35,7 @@ GoBackNSender::GoBackNSender(int N, shared_ptr<UnreliableNetworkLayer> unreliabl
 }
 
 GoBackNSender::~GoBackNSender() {
+//    TODO: include code to send a terminal signal packet
     *isThreadAlive = false;
     _fake_notify();
     timer.join();
